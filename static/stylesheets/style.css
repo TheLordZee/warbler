@@ -305,6 +305,10 @@ nav + .container {
   color: #657786;
 }
 
+.like{
+  margin: auto;
+  width: 50%;
+}
 /* ==================== User cards on follower/following pages */
 
 .user-card {

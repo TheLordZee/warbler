@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<div id="warbler-hero" class="full-width">
+    <img src="{{ user.header_image_url }}" alt="Header image for {{user.username}}" id="profile-header">
+  </div>
+  <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="profile-avatar">
+  <div class="row full-width">
+    <div class="container">
+      <div class="row justify-content-end">
+        <div class="col-9">
+          <ul class="user-stats nav nav-pills">
+            <li class="stat">
+              <p class="small">Messages</p>
+              <h4>
+                <a href="/users/{{ user.id }}">{{ user.messages | length }}</a>
+              </h4>
+            </li>
+            <li class="stat">
+              <p class="small">Following</p>
+              <h4>
+                <a href="/users/{{ user.id }}/following">{{ user.following | length }}</a>
+              </h4>
+            </li>
+            <li class="stat">
+              <p class="small">Followers</p>
+              <h4>
+                <a href="/users/{{ user.id }}/followers">{{ user.followers | length }}</a>
+              </h4>
+            </li>
+            <li class="stat">
+              <p class="small">Likes</p>
+              <h4>
+                <a href="/users/{{ user.id }}/likes">{{ user.likes | length }}</a>
+              </h4>
+            </li>
+            <div class="ml-auto">
+              {% if g.user.id == user.id %}
+              <a href="/users/profile" class="btn btn-outline-secondary">Edit Profile</a>
+              <form method="POST" action="/users/delete" class="form-inline">
+                <button class="btn btn-outline-danger ml-2">Delete Profile</button>
+              </form>
+              {% elif g.user %}
+              {% if g.user.is_following(user) %}
+              <form method="POST" action="/users/stop-following/{{ user.id }}">
+                <button class="btn btn-primary">Unfollow</button>
+              </form>
+              {% else %}
+              <form method="POST" action="/users/follow/{{ user.id }}">
+                <button class="btn btn-outline-primary">Follow</button>
+              </form>
+              {% endif %}
+              {% endif %}
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <div>
+        <h3 class="like display-5">Likes:</h3>
+      <ul class="list-group" id="messages">
+        {% for msg in messages %}
+          <li class="list-group-item like">
+            <a href="/messages/{{ msg.id  }}" class="message-link"/>
+            <a href="/users/{{ msg.user.id }}">
+              <img src="{{ msg.user.image_url }}" alt="" class="timeline-image">
+            </a>
+            <div class="message-area">
+              <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
+              <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
+              <p>{{ msg.text }}</p>
+            </div>
+            <form method="POST" action="/users/add_like/{{ msg.id }}" id="messages-form">
+              <button class="
+                btn 
+                btn-sm 
+                btn-primary"
+              >
+                <i class="fas fa-star"></i> 
+              </button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+  </div>
+{% endblock %}
