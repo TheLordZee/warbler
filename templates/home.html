@@ -42,20 +42,20 @@
       <ul class="list-group" id="messages">
         {% for msg in messages %}
           <li class="list-group-item">
-            <a href="/messages/{{ msg.id  }}" class="message-link"/>
-            <a href="/users/{{ msg.user.id }}">
-              <img src="{{ msg.user.image_url }}" alt="" class="timeline-image">
+            <a href="/messages/{{ msg[0].id  }}" class="message-link"/>
+            <a href="/users/{{ msg[0].user.id }}">
+              <img src="{{ msg[0].user.image_url }}" alt="" class="timeline-image">
             </a>
             <div class="message-area">
-              <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
-              <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
-              <p>{{ msg.text }}</p>
+              <a href="/users/{{ msg[0].user.id }}">@{{ msg[0].user.username }}</a>
+              <span class="text-muted">{{ msg[0].timestamp.strftime('%d %B %Y') }}</span>
+              <p>{{ msg[0].text }}</p>
             </div>
-            <form method="POST" action="/users/add_like/{{ msg.id }}" id="messages-form">
+            <form method="POST" action="/users/add_like/{{ msg[0].id }}" id="messages-form">
               <button class="
                 btn 
                 btn-sm 
-                {{'btn-primary' if msg.id in likes else 'btn-secondary'}}"
+                {{'btn-primary' if msg[0].id in likes else 'btn-secondary'}}"
               >
                 <i class="fa fa-thumbs-up"></i> 
               </button>

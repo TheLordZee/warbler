@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import EditProfileForm, UserAddForm, LoginForm, MessageForm
-from models import db, connect_db, User, Message
+from models import Follows, db, connect_db, User, Message
 
 CURR_USER_KEY = "curr_user"
 
@@ -319,16 +319,16 @@ def homepage():
     """
 
     if g.user:
-        print('*********************************************************************************************************************')
-        test = User.query.get_or_404(5)
-        print(test in g.user.following)
-        print('*********************************************************************************************************************')
-        messages = (Message
-                    .query
-                    .filter(Message.user in g.user.following)
+        messages = (db.session
+                    .query(Message, Follows)
+                    .filter(Follows.user_following_id == g.user.id, Message.user_id == Follows.user_being_followed_id)
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
+
+        print('***********************************************************************************************************************')
+        print(messages[0][0])
+        print('***********************************************************************************************************************')
 
         return render_template('home.html', messages=messages)
 
