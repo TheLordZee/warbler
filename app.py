@@ -272,10 +272,6 @@ def add_like(msg_id):
             db.session.add(new_like)
             db.session.commit()
     
-    print('*************************************************************************')
-    print(g.user.likes)
-    print('*************************************************************************')
-    
     return redirect('/')
 
 @app.route('/users/<int:id>/likes')
@@ -302,7 +298,6 @@ def messages_add():
         return redirect("/")
 
     form = MessageForm()
-
     if form.validate_on_submit():
         msg = Message(text=form.text.data)
         g.user.messages.append(msg)

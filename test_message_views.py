@@ -8,6 +8,8 @@
 import os
 from unittest import TestCase
 
+from werkzeug.utils import html
+
 from models import db, connect_db, Message, User
 
 # BEFORE we import our app, let's set an environmental variable
@@ -51,6 +53,10 @@ class MessageViewTestCase(TestCase):
 
         db.session.commit()
 
+    def tearDown(self):
+        """Cleansup"""
+        db.session.rollback()
+
     def test_add_message(self):
         """Can use add a message?"""
 
@@ -71,3 +77,86 @@ class MessageViewTestCase(TestCase):
 
             msg = Message.query.one()
             self.assertEqual(msg.text, "Hello")
+
+    def test_anon_home(self):
+        """Do messages display on the homepage if is not logged in?"""
+        
+        with self.client as c:
+            res = c.get("/")
+            html = res.get_data(as_text=True)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertIn("<h4>New to Warbler?</h4>", html)
+            self.assertNotIn('<ul class="list-group" id="messages">', html)
+
+    def test_logged_in_home(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                 sess[CURR_USER_KEY] = self.testuser.id
+
+            res = c.get("/")
+            html = res.get_data(as_text=True)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertNotIn("<h4>New to Warbler?</h4>", html)
+            self.assertIn('<ul class="list-group" id="messages">', html)
+
+    def test_anon_new_message(self):
+        with self.client as c:
+            res = c.get('/messages/new')
+            self.assertEqual(res.status_code, 302)
+
+    def test_logged_in_message(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                 sess[CURR_USER_KEY] = self.testuser.id
+
+            res = c.get('/messages/new')
+            html = res.get_data(as_text=True)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertIn("Add my message!", html)
+
+    def test_show_message(self):
+        
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+            
+            m = Message(text="Sample Text", user_id=self.testuser.id)
+            db.session.add(m)
+            db.session.commit()
+
+            res = c.get(f'/messages/{m.id}')
+            html = res.get_data(as_text=True)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertIn(m.text, html)
+   
+    def test_anon_delete_message(self):
+        with self.client as c:
+            m = Message(text="Sample Text", user_id=self.testuser.id)
+            db.session.add(m)
+            db.session.commit()
+
+            res = c.post(f'/messages/{m.id}/delete')
+            query = Message.query.get(m.id)
+
+            self.assertEqual(m, query)
+            self.assertEqual(res.status_code, 302)
+
+    def test_delete_message(self):
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+            
+            m = Message(text="Sample Text", user_id=self.testuser.id)
+            db.session.add(m)
+            db.session.commit()
+
+            res = c.post(f'/messages/{m.id}/delete')
+            query = Message.query.get(m.id)
+
+            self.assertEqual(query, None)
+            self.assertEqual(res.status_code, 302)
