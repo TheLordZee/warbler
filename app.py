@@ -325,6 +325,11 @@ def messages_destroy(message_id):
         return redirect("/")
 
     msg = Message.query.get(message_id)
+
+    if msg.user_id != g.user.id:
+        flash("Deleting other people's posts is not allowed.", 'danger')
+        return redirect('/')
+
     db.session.delete(msg)
     db.session.commit()
 

@@ -51,6 +51,11 @@ class MessageViewTestCase(TestCase):
                                     password="testuser",
                                     image_url=None)
 
+        self.testuser2 = User.signup(username="testuser2",
+                                    email="test2@test.com",
+                                    password="testuser2",
+                                    image_url=None)
+
         db.session.commit()
 
     def tearDown(self):
@@ -152,11 +157,16 @@ class MessageViewTestCase(TestCase):
                 sess[CURR_USER_KEY] = self.testuser.id
             
             m = Message(text="Sample Text", user_id=self.testuser.id)
-            db.session.add(m)
+            m2 = Message(text="Some More Sample Text", user_id=self.testuser2.id)
+            db.session.add_all([m, m2])
             db.session.commit()
 
             res = c.post(f'/messages/{m.id}/delete')
+            res2 = c.post(f'/messages/{m2.id}/delete')
             query = Message.query.get(m.id)
+            query2 = Message.query.get(m2.id)
 
             self.assertEqual(query, None)
+            self.assertEqual(query2, m2)
             self.assertEqual(res.status_code, 302)
+            self.assertEqual(res2.status_code, 302)
